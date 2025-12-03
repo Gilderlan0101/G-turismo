@@ -1,0 +1,26 @@
+[project]
+name = "g-turismo-api"
+version = "0.1.0"
+description = "Gestão de turismo. Feito para empresas de turismo."
+authors = [
+    {name = "Gilderlan silva",email = "dacruzgg01@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard] (>=0.123.0,<0.124.0)",
+    "python-dotenv (>=1.2.1,<2.0.0)",
+    "blue (>=0.9.1,<0.10.0)",
+    "isort (>=7.0.0,<8.0.0)",
+    "tortoise-orm (>=0.25.1,<0.26.0)",
+    "passlib (>=1.7.4,<2.0.0)",
+    "jwt (>=1.4.0,<2.0.0)",
+    "python-jose (>=3.5.0,<4.0.0)",
+    "pillow (>=12.0.0,<13.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
