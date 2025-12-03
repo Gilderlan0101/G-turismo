@@ -1,8 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 
 from src.schemas.auth.schemas_login import LoginResponse
 from src.schemas.auth.schemas_register import CrateUser
 from src.service.auth_user.auth_register import create_account
+from src.service.send_email.send_verification_code import send_code_email
+from src.service.jwt.depends import get_current_user
+from src.schemas.auth.schemas_auth import SystemUser
+
 
 router = APIRouter(tags=['Authentication'])
 
@@ -25,7 +29,18 @@ async def register(target: CrateUser):
         return create
 
 
-@router.post('/confirm_account')
-async def comfim_activate_account(
-    ):
-pass
+@router.post('/send_code_for_email')
+async def seend_code_for_email(
+current_user: SystemUser = Depends(get_current_user)
+):
+
+    send = await send_code_email(target_email=current_user.email)
+    if send:
+        return {'message': 'Verifique seu email'}
+    else:
+        return {'message': 'Erro ao tenta verifica email. Tente novamente.'}
+
+
+@router.post('/comfim_account')
+async def comfim_account_with_code():
+    pass

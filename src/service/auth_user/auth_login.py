@@ -4,39 +4,52 @@ from fastapi import HTTPException, status
 
 from src.models.user import User
 from src.schemas.auth.schemas_login import LoginResponse
-from src.service.jwt.auth import (create_access_token, create_refresh_token,
-                                  verify_password)
+from src.service.jwt.auth import (
+    create_access_token,
+    create_refresh_token,
+    verify_password
+)
 
+from src.utils.hashed_email import create_email_search_hash
 
-async def checking_account(target) -> Dict[str, Any]:
-    # Verifica se o usuário target tem conta no site e realiza o login
+async def checking_account(target: Dict[str, Any]):
+    try:
+        #    Usamos .get_or_none() para obter o objeto do usuário ou None.
+        user = await User.filter(email=target.get('email')).first()
 
-    # 1. Busca o usuário no banco de dados pelo username
-    user = User.filter(username=target.username).first()
+        #  Se o usuário não for encontrado (user é None)
+        if user is None:
+            # Retorna None para que a função de rota lide com o erro 404/401
+            return None
 
-    # 2. Se o usuário não for encontrado, levanta exceção de não autorizado
-    if not user:
+        # 3. Verifica a senha (user agora é o objeto com o atributo .password)
+        if not verify_password(target.get('password'), user.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='Credenciais inválidas: senha incorreta',
+            )
+
+        #  Se a verificação for bem-sucedida, gera os tokens
+        user_id_str = str(user.id)
+        access_token = create_access_token(user_id_str)
+        refresh_token = create_refresh_token(user_id_str)
+
+        #  Retorna o dicionário de resposta
+        return {
+            'id': user.id,
+            'username': user.username,
+            'access_token': access_token,
+            'refresh_token': refresh_token,
+        }
+
+    except HTTPException:
+        # Captura e relança exceções HTTP que você levanta dentro da função
+        raise
+
+    except Exception as e:
+        # Evita retornar strings de erro internas
+        print(f"Erro Inesperado durante o login: {e}")
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Credenciais inválidas',
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='Ocorreu um erro interno inesperado no servidor durante a autenticação.'
         )
-
-    # 3. Verifica a senha fornecida (target.password) contra a senha hasheada do usuário encontrado (user.password)
-    if not verify_password(target.password, user.password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Credenciais inválidas',
-        )
-
-    # 4. Se a verificação for bem-sucedida, gera os tokens
-    user_id_str = str(user.id)
-    access_token = create_access_token(user_id_str)
-    refresh_token = create_refresh_token(user_id_str)
-
-    # 5. Retorna a resposta de login
-    return LoginResponse(
-        id=user.id,
-        email=getattr(user, 'email', ''),
-        access_token=access_token,
-        refresh_token=refresh_token,
-    )

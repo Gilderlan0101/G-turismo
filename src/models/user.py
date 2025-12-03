@@ -17,6 +17,7 @@ class User(models.Model):
     )
     status = fields.BooleanField(default=True)
     verified_account = fields.BooleanField(default=False)
+    temporary_code = fields.CharField(max_length=10, null=True)
     created_in = fields.DatetimeField(
         auto_now_add=True,
     )

@@ -7,6 +7,7 @@ from passlib.context import CryptContext
 # Carrega variáveis de ambiente do arquivo .env
 load_dotenv()
 
+SENDER_EMAIL='dacruzgg01@gmail.com'
 
 ## ⚙️ CONFIGURAÇÕES GERAIS DA APLICAÇÃO
 # ---

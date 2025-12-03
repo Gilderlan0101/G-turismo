@@ -25,3 +25,6 @@ def verify_email(email: str, hashed_email: str) -> bool:
 def create_email_search_hash(email: str) -> str:
     """Função para criar o hash SHA-256 determinístico."""
     return hashlib.sha256(email.lower().encode('utf-8')).hexdigest()
+
+
+

@@ -52,10 +52,8 @@ async def create_account(target) -> Dict[str, Any]:
         if isinstance(target, dict):
 
             create = await User.create(
-                username=get_hashed_email(
-                    target.get('username')
-                ),  # Podemos reaproveita essa função aqui
-                email=get_hashed_email(target.get('email')),
+                username=target.get('username'),
+                email=target.get('email'),
                 password=get_hashed_password(target.get('password')),
                 status=target.get('status'),
                 email_search_hash=create_email_search_hash(

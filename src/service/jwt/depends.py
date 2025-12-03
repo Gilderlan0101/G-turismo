@@ -10,7 +10,7 @@ async def get_current_user(
     token: str = Depends(OAUTH2_SCHEME),
 ) -> SystemUser:
 
-    token_data = DecodeToken()
+    token_data = DecodeToken(str(token))
     user_id = int(token_data.data.sub)
 
     search_target_user = await User.get_or_none(id=user_id)

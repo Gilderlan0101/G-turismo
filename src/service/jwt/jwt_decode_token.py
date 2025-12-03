@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 import jwt
+from jwt import exceptions
 from fastapi import Depends, HTTPException, status
 
 from confing import JWT_ALGORITHM, JWT_SECRET_KEY, OAUTH2_SCHEME
@@ -12,13 +13,14 @@ class DecodeToken:
 
         self.data: Optional[TokenPayload] = None
 
+
         try:
             payload = jwt.decode(
                 token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM]
             )
             token_data = TokenPayload(**payload)
 
-        except jwt.PyJWTError:
+        except Exception:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='Token inválido ou com formato incorreto.',
