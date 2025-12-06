@@ -33,6 +33,7 @@ class Server:
         self.app = FastAPI(
             title=f'{APP_NAME}',
             lifespan=lifespan,
+            debug=bool(os.getenv('DEBUG')),
         )
 
         self.setup_middlewares()

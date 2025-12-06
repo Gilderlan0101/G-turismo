@@ -25,7 +25,7 @@ class User(models.Model):
         auto_now=True,
     )
 
-    class Meta:
+    class Meta:   # type: ignore
         table = 'users'
 
     def __str__(self):

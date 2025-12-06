@@ -4,8 +4,11 @@ from fastapi import HTTPException, status
 
 from src.models.user import User
 from src.service.jwt.auth import get_hashed_password, verify_password
-from src.utils.hashed_email import (create_email_search_hash, get_hashed_email,
-                                    verify_email)
+from src.utils.hashed_email import (
+    create_email_search_hash,
+    get_hashed_email,
+    verify_email,
+)
 
 
 async def create_account(target) -> Dict[str, Any]:

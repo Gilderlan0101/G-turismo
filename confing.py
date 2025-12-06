@@ -1,21 +1,19 @@
 import os
-
-from dotenv import load_dotenv
-from fastapi.security import OAuth2PasswordBearer
+from dotenv import load_dotenv   # type: ignore
+from fastapi.security import OAuth2PasswordBearer   # type: ignore
 from passlib.context import CryptContext
 
 # Carrega variáveis de ambiente do arquivo .env
 load_dotenv()
 
-SENDER_EMAIL='dacruzgg01@gmail.com'
+SENDER_EMAIL = os.getenv('COMPANY_EMAIL')
 
 ## ⚙️ CONFIGURAÇÕES GERAIS DA APLICAÇÃO
 # ---
 # Usado para identificação geral da API/Empresa.
 
 # Nome da empresa/cliente que está usando a API
-APP_NAME = 'G-turismo'
-
+APP_NAME = os.getenv('APP_TITLE')
 # Descrição da empresa ou da API (aparece na documentação, ex: Swagger)
 API_DESCRIPTION = 'API para gestão de...'
 

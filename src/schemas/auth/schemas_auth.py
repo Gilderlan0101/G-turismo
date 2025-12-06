@@ -7,7 +7,7 @@ class SystemUser(BaseModel):
     id: int
     username: str
     email: EmailStr
-    photo: str
+    photo: Optional[str] = None
     status: bool = True
 
     model_config = {'from_attributes': True}

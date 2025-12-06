@@ -1,168 +1,200 @@
-Documentação do Script de Envio de Código de Verificação por E-mail
+# Documentação do Módulo de Serviço de Email
 
-Este script Python implementa a lógica necessária para gerar um código de autenticação de 4 dígitos e enviá-lo para um endereço de e-mail especificado, utilizando o servidor SMTP do Gmail com autenticação de chave de aplicativo (App Key).
+## Visão Geral
 
-📄 Funcionalidades Principais
+Este módulo fornece funcionalidades completas para envio de emails e verificação de contas através de códigos de autenticação. Foi projetado seguindo princípios de separação de responsabilidades (SOLID) e oferece alta testabilidade e manutenibilidade.
 
-Geração de Código: Gera um código de verificação numérico aleatório de quatro dígitos (1000 a 9999).
+## Estrutura do Módulo
 
-Configuração de Ambiente: Carrega credenciais de e-mail e chaves de aplicativo de um arquivo de variáveis de ambiente (.env).
+### 1. Classes Principais
 
-Envio Seguro de E-mail: Conecta-se ao servidor SMTP do Gmail via SSL/TLS (porta 465) para garantir uma comunicação segura.
+#### EmailConfig
+Responsável pelo carregamento e validação das configurações de email a partir de variáveis de ambiente.
 
-🛠️ Dependências
+**Atributos:**
+- `google_app_key`: Chave de aplicação do Google para envio de emails
+- `company_email`: Email da empresa remetente
+- `app_title`: Título da aplicação
 
-O script utiliza as seguintes bibliotecas:
+**Métodos:**
+- `_validate_config()`: Valida se todas as configurações necessárias estão presentes
 
-Biblioteca
+#### EmailSender
+Gerencia a conexão e envio de emails através de servidores SMTP.
 
-Propósito
+**Configurações SMTP:**
+- Gmail: `smtp.gmail.com:465`
+- Outlook: `smtp.office365.com:465`
 
-os
+**Métodos Principais:**
+- `send()`: Envia email para um destinatário
+- `_send_with_server()`: Tenta envio usando um servidor específico
+- `_create_message()`: Cria objeto MIMEText para envio
 
-Interação com o sistema operacional para carregar variáveis de ambiente.
+#### UserCodeManager
+Gerencia códigos de verificação de usuários e regras de negócio relacionadas.
 
-smtplib
+**Métodos Estáticos:**
+- `update_verification_code()`: Atualiza código temporário do usuário
+- `can_send_new_code()`: Verifica condições para envio de novo código
 
-Implementação do protocolo cliente SMTP (Simple Mail Transfer Protocol).
+#### VerificationEmailService
+Serviço de alto nível para orquestração do processo de envio de emails de verificação.
 
-ssl
+**Métodos:**
+- `send_verification_code()`: Processo completo de envio de código
+- `_generate_email_body()`: Gera conteúdo do email
+- `_generate_email_subject()`: Gera assunto do email
 
-Fornece wrappers de socket com criptografia de camada de transporte (TLS/SSL).
+### 2. Funções Públicas (Legacy Support)
 
-email.mime.text
+#### send_code_email(target_email: str) -> bool
+Função principal para envio de códigos de verificação. Mantida para compatibilidade.
 
-Criação do objeto da mensagem de e-mail com corpo de texto.
+#### verify_status_account(code_authentication: str, target_email: str) -> bool
+Verifica e atualiza status da conta com código de autenticação.
 
-dotenv
+#### send_email_message(receiver_email: str, subject: str, body: str) -> bool
+Função genérica para envio de mensagens de email.
 
-Carregamento de variáveis de ambiente do arquivo .env.
+#### activating_the_account_with_a_code(target_account: str, code: str) -> bool
+Ativa a conta do usuário após verificação do código.
 
-random
+## Requisitos de Configuração
 
-Geração de números aleatórios para o código de verificação.
+### Variáveis de Ambiente Necessárias
 
-asyncio
+```bash
+GOOGLE_KEY_APP=          # Chave de aplicação do Google para SMTP
+COMPANY_EMAIL=           # Email remetente da empresa
+APP_TITLE=               # Título da aplicação para o assunto do email
+```
 
-(Apenas no bloco de teste) Execução de funções assíncronas.
+### Dependências
 
-Você pode instalá-las (exceto as que são nativas do Python) usando pip:
+- Python 3.7+
+- `smtplib` (biblioteca padrão)
+- `ssl` (biblioteca padrão)
+- `email.mime.text` (biblioteca padrão)
+- `python-dotenv`
+- `fastapi` (apenas para HTTPException)
+- Tortoise ORM (para modelo `User`)
 
-pip install python-dotenv
+## Fluxo de Uso
 
+### 1. Envio de Código de Verificação
 
-⚙️ Configuração (Arquivo .env)
+```python
+# Método recomendado (nova implementação)
+config = EmailConfig()
+email_sender = EmailSender(config)
+service = VerificationEmailService(email_sender, config)
+await service.send_verification_code("usuario@exemplo.com")
 
-Para que o script funcione, você deve criar um arquivo chamado .env no mesmo diretório do script, contendo suas credenciais.
+# Método legacy (compatibilidade)
+await send_code_email("usuario@exemplo.com")
+```
 
-IMPORTANTE: Você deve usar uma Chave de Aplicativo (App Key) do Google e NÃO a senha da sua conta para autenticação, devido às políticas de segurança do Google.
+### 2. Verificação de Código
 
-# Exemplo de conteúdo do arquivo .env
-COMPANY_EMAIL="seu-email-aqui@gmail.com"
-GOOGLE_KEY_APP="sua-chave-de-app-aqui"
+```python
+# Atualizar código no banco
+await verify_status_account("1234", "usuario@exemplo.com")
 
+# Ativar conta com código
+await activating_the_account_with_a_code("usuario@exemplo.com", "1234")
+```
 
-O script carregará estas variáveis usando load_dotenv().
+### 3. Envio Genérico de Email
 
-🧠 Funções
+```python
+send_email_message(
+    receiver_email="destinatario@exemplo.com",
+    subject="Assunto do Email",
+    body="Corpo da mensagem"
+)
+```
 
-1. secret_verificatio_code_for_emails() -> str
+## Regras de Negócio
 
-Gera um código de verificação aleatório.
+### Envio de Códigos
+1. Um novo código pode ser enviado se:
+   - O usuário não possui código temporário, OU
+   - A conta não está verificada e já existe um código
 
-Retorno
+2. Após verificação bem-sucedida:
+   - `verified_account` = True
+   - `status` = True
+   - Código temporário é limpo
 
-Tipo
+### Validação de Códigos
+1. Códigos devem ter no máximo 4 caracteres
+2. O código fornecido pelo usuário deve corresponder exatamente ao código armazenado
+3. Códigos são comparados como strings
 
-Descrição
+## Tratamento de Erros
 
-code
+### Exceções Personalizadas
+- `ValueError`: Configurações de ambiente ausentes
+- `HTTPException`: Erros específicos com códigos de status HTTP apropriados
 
-str
+### Códigos de Status HTTP
+- 401: Código inválido
+- 510: Código muito longo (>4 caracteres)
+- 500: Erro interno do servidor
 
-Um código numérico de 4 dígitos (ex: "4582").
+## Logging e Debug
 
-2. send_email_message(receiver_email: str, subject: str, body: str) -> bool
+O módulo utiliza prints para logging básico. Para produção, recomenda-se substituir por um sistema de logging apropriado.
 
-Estabelece a conexão com o servidor SMTP e envia a mensagem.
+```python
+# Exemplo de substituição para produção
+import logging
+logger = logging.getLogger(__name__)
 
-Parâmetro
+# Substituir print(f"Erro: {e}") por:
+logger.error(f"Erro: {e}")
+```
 
-Tipo
+## Considerações de Segurança
 
-Descrição
+1. **Códigos temporários**: São armazenados como strings no banco de dados
+2. **Comparação segura**: Uso de `str()` para garantir comparação consistente
+3. **Validação de entrada**: Verificação de comprimento e tipo de dados
+4. **Conexão segura**: Uso de SMTP_SSL para comunicação criptografada
 
-receiver_email
+## Melhorias Futuras
 
-str
+1. Implementar sistema de logging estruturado
+2. Adicionar suporte a templates de email (HTML)
+3. Implementar fila de emails para processamento assíncrono
+4. Adicionar métricas e monitoramento
+5. Suporte a múltiplos provedores de email
 
-O endereço de e-mail do destinatário.
+## Exemplo Completo de Uso
 
-subject
+```python
+# Configuração e uso do serviço
+config = EmailConfig()
+email_sender = EmailSender(config)
+service = VerificationEmailService(email_sender, config)
 
-str
+# Enviar código de verificação
+success = await service.send_verification_code("usuario@exemplo.com")
 
-O assunto do e-mail.
+if success:
+    # Verificar código do usuário
+    activation = await activating_the_account_with_a_code(
+        "usuario@exemplo.com",
+        "1234"
+    )
 
-body
+    if activation:
+        print("Conta ativada com sucesso")
+    else:
+        print("Falha na ativação da conta")
+```
 
-str
+## Notas de Migração
 
-O corpo da mensagem (texto puro).
-
-Lógica de Conexão:
-
-Define a porta 465 (padrão para SSL) e cria um contexto SSL.
-
-Cria o objeto MIMEText (estrutura do e-mail).
-
-Utiliza smtplib.SMTP_SSL para iniciar a conexão segura.
-
-Realiza o server.login() usando SENDER_EMAIL e GOOGLE_APP_KEY.
-
-Envia o e-mail usando server.sendmail().
-
-Retorna True em caso de sucesso ou False em caso de erro.
-
-3. async def send_code_email(target_email: str) -> bool
-
-Orquestra a geração do código e o envio do e-mail formatado.
-
-Parâmetro
-
-Tipo
-
-Descrição
-
-target_email
-
-str
-
-O endereço de e-mail para onde o código será enviado.
-
-Processo:
-
-Verifica se as variáveis de ambiente necessárias estão presentes, levantando um ValueError se não estiverem.
-
-Chama secret_verificatio_code_for_emails() para obter o código.
-
-Monta o subject e a mensagem (corpo do e-mail) com o código de verificação inserido.
-
-Chama send_email_message() para enviar.
-
-🚀 Uso e Teste
-
-O bloco if __name__ == '__main__': demonstra como testar a funcionalidade de envio, executando a função assíncrona send_code_email com um e-mail de teste.
-
-if __name__ == '__main__':
-    # ... import asyncio ...
-    try:
-        test_email = "contatodevorbit@gmail.com" # Substitua pelo seu email de teste
-        test_result = asyncio.run(send_code_email(test_email))
-
-        # ... (lógica de impressão do resultado)
-    except Exception as e:
-        print(f"Ocorreu um erro: {e}")
-
-
-Para usá-lo em uma aplicação real (ex: um backend web), você importaria e chamaria a função send_code_email(target_email) em seu fluxo de autenticação.
+Para projetos existentes, as funções públicas (`send_code_email`, `verify_status_account`, `send_email_message`) mantêm compatibilidade com código legado. Para novas implementações, recomenda-se usar as classes diretamente para melhor controle e testabilidade.

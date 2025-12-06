@@ -7,10 +7,11 @@ from src.schemas.auth.schemas_login import LoginResponse
 from src.service.jwt.auth import (
     create_access_token,
     create_refresh_token,
-    verify_password
+    verify_password,
 )
 
 from src.utils.hashed_email import create_email_search_hash
+
 
 async def checking_account(target: Dict[str, Any]):
     try:
@@ -48,8 +49,8 @@ async def checking_account(target: Dict[str, Any]):
 
     except Exception as e:
         # Evita retornar strings de erro internas
-        print(f"Erro Inesperado durante o login: {e}")
+        print(f'Erro Inesperado durante o login: {e}')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='Ocorreu um erro interno inesperado no servidor durante a autenticação.'
+            detail='Ocorreu um erro interno inesperado no servidor durante a autenticação.',
         )
