@@ -24,7 +24,7 @@ async def checking_account(target: Dict[str, Any]):
             return None
 
         # 3. Verifica a senha (user agora é o objeto com o atributo .password)
-        if not verify_password(target.get('password'), user.password):
+        if not verify_password(str(target.get('password')), user.password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='Credenciais inválidas: senha incorreta',

@@ -6,6 +6,8 @@ from src.schemas.auth.schemas_auth import SystemUser
 from src.service.jwt.jwt_decode_token import DecodeToken
 
 
+
+
 async def get_current_user(
     token: str = Depends(OAUTH2_SCHEME),
 ) -> SystemUser:
