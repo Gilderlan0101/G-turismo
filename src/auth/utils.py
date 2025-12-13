@@ -1,16 +1,11 @@
 from typing import Any, Dict
-
 from fastapi import HTTPException, status
 
+from src.auth.schemas import LoginResponse
 from src.models.user import User
-from src.schemas.auth.schemas_login import LoginResponse
-from src.service.jwt.auth import (
-    create_access_token,
-    create_refresh_token,
-    verify_password,
-)
-
-from src.utils.hashed_email import create_email_search_hash
+from src.service.jwt.auth import (create_access_token, create_refresh_token,
+                                  verify_password)
+from src.global_utils.hashed_email import create_email_search_hash
 
 
 async def checking_account(target: Dict[str, Any]):
@@ -54,3 +49,5 @@ async def checking_account(target: Dict[str, Any]):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='Ocorreu um erro interno inesperado no servidor durante a autenticação.',
         )
+
+

@@ -2,11 +2,13 @@ import os
 import smtplib
 import ssl
 from email.mime.text import MIMEText
-from fastapi import HTTPException, status
 from typing import Optional
+
 from dotenv import load_dotenv
-from src.utils.generator_code_for_email import secret_verificatio_code_for_emails
+from fastapi import HTTPException, status
+
 from src.models.user import User
+from src.global_utils.generator_code_for_email import secret_verificatio_code_for_emails
 
 # Carrega variáveis de ambiente
 load_dotenv()
@@ -34,21 +36,17 @@ class EmailSender:
     """Classe responsável pelo envio de emails."""
 
     SMTP_SERVERS = {
-        'gmail': {
-            'host': 'smtp.gmail.com',
-            'port': 465
-        },
-        'outlook': {
-            'host': 'smtp.office365.com',
-            'port': 465
-        }
+        'gmail': {'host': 'smtp.gmail.com', 'port': 465},
+        'outlook': {'host': 'smtp.office365.com', 'port': 465},
     }
 
     def __init__(self, config: EmailConfig):
         self.config = config
         self.context = ssl.create_default_context()
 
-    def _create_message(self, receiver_email: str, subject: str, body: str) -> MIMEText:
+    def _create_message(
+        self, receiver_email: str, subject: str, body: str
+    ) -> MIMEText:
         """Cria o objeto da mensagem de email."""
         message = MIMEText(body, 'plain', 'utf-8')
         message['Subject'] = subject
@@ -56,8 +54,9 @@ class EmailSender:
         message['To'] = receiver_email
         return message
 
-    def _send_with_server(self, server_name: str, message: MIMEText,
-                          receiver_email: str) -> bool:
+    def _send_with_server(
+        self, server_name: str, message: MIMEText, receiver_email: str
+    ) -> bool:
         """Tenta enviar email usando um servidor SMTP específico."""
         server_config = self.SMTP_SERVERS[server_name]
 
@@ -65,13 +64,15 @@ class EmailSender:
             with smtplib.SMTP_SSL(
                 server_config['host'],
                 server_config['port'],
-                context=self.context
+                context=self.context,
             ) as server:
-                server.login(self.config.company_email, self.config.google_app_key)
+                server.login(
+                    self.config.company_email, self.config.google_app_key
+                )
                 server.sendmail(
                     self.config.company_email,
                     receiver_email,
-                    message.as_string()
+                    message.as_string(),
                 )
             return True
         except Exception:
@@ -107,7 +108,7 @@ class UserCodeManager:
             await user.save()
             return True
         except Exception as e:
-            print(f"Erro ao atualizar código do usuário: {e}")
+            print(f'Erro ao atualizar código do usuário: {e}')
             return False
 
     @staticmethod
@@ -165,19 +166,21 @@ Se você não solicitou este código, ignore esta mensagem.
             # Busca usuário pelo email
             user = await User.filter(email=target_email).first()
             if not user:
-                print(f"Usuário com email {target_email} não encontrado.")
+                print(f'Usuário com email {target_email} não encontrado.')
                 return False
 
             # Verifica se pode enviar novo código
             if not await UserCodeManager.can_send_new_code(user):
-                print("Não é possível enviar novo código para este usuário.")
+                print('Não é possível enviar novo código para este usuário.')
                 return False
 
             # Gera e armazena o código
             code = secret_verificatio_code_for_emails()
 
-            if not await UserCodeManager.update_verification_code(user, str(code)):
-                print("Falha ao atualizar código do usuário.")
+            if not await UserCodeManager.update_verification_code(
+                user, str(code)
+            ):
+                print('Falha ao atualizar código do usuário.')
                 return False
 
             # Prepara e envia o email
@@ -187,7 +190,7 @@ Se você não solicitou este código, ignore esta mensagem.
             return self.email_sender.send(target_email, subject, body)
 
         except Exception as e:
-            print(f"Erro no envio de código de verificação: {e}")
+            print(f'Erro no envio de código de verificação: {e}')
             return False
 
 
@@ -205,14 +208,16 @@ async def send_code_email(target_email: str) -> bool:
 
         return await service.send_verification_code(target_email)
     except ValueError as e:
-        print(f"Erro de configuração: {e}")
+        print(f'Erro de configuração: {e}')
         return False
     except Exception as e:
-        print(f"Erro inesperado: {e}")
+        print(f'Erro inesperado: {e}')
         return False
 
 
-async def verify_status_account(code_authentication: str, target_email: str) -> bool:
+async def verify_status_account(
+    code_authentication: str, target_email: str
+) -> bool:
     """
     Função pública para verificação de status da conta.
 
@@ -223,9 +228,11 @@ async def verify_status_account(code_authentication: str, target_email: str) -> 
         if not user:
             return False
 
-        return await UserCodeManager.update_verification_code(user, code_authentication)
+        return await UserCodeManager.update_verification_code(
+            user, code_authentication
+        )
     except Exception as e:
-        print(f"Erro na verificação de status da conta: {e}")
+        print(f'Erro na verificação de status da conta: {e}')
         return False
 
 
@@ -240,29 +247,28 @@ def send_email_message(receiver_email: str, subject: str, body: str) -> bool:
         email_sender = EmailSender(config)
         return email_sender.send(receiver_email, subject, body)
     except ValueError as e:
-        print(f"Erro de configuração: {e}")
+        print(f'Erro de configuração: {e}')
         return False
     except Exception as e:
-        print(f"Erro no envio de email: {e}")
+        print(f'Erro no envio de email: {e}')
         return False
 
 
-async def activating_the_account_with_a_code(target_account:str, code: str) -> bool:
+async def activating_the_account_with_a_code(
+    target_account: str, code: str
+) -> bool:
     """Função responsavel por ativa a conta do usuario"""
 
-
-    if len(code)   > 4:
+    if len(code) > 4:
         raise HTTPException(
             status_code=status.HTTP_510_NOT_EXTENDED,
-            detail="Esse valor e muito grande"
+            detail='Esse valor e muito grande',
         )
 
     elif not isinstance(code, str):
         len_code = len(code)
         if len_code == 4:
             code = int(code)
-
-
 
     try:
         target = await User.filter(email=target_account).first()
@@ -279,8 +285,8 @@ async def activating_the_account_with_a_code(target_account:str, code: str) -> b
             else:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Codigo invalido. Tente novamente"
-            )
+                    detail='Codigo invalido. Tente novamente',
+                )
 
     except Exception as e:
         return False

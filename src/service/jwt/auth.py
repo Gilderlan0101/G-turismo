@@ -11,13 +11,9 @@ from fastapi import HTTPException, status
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-from confing import (  # REFRESH_TOKEN_EXPIRE_MINUTES (Você pode querer importar esta variável se ela existir no config.py)
-    ACCESS_TOKEN_EXPIRE_MINUTES,
-    JWT_ALGORITHM,
-    JWT_REFRESH_SECRET_KEY,
-    JWT_SECRET_KEY,
-    PASSWORD_CONTEXT,
-)
+from config import (  # REFRESH_TOKEN_EXPIRE_MINUTES (Você pode querer importar esta variável se ela existir no config.py)
+    ACCESS_TOKEN_EXPIRE_MINUTES, JWT_ALGORITHM, JWT_REFRESH_SECRET_KEY,
+    JWT_SECRET_KEY, PASSWORD_CONTEXT)
 
 load_dotenv()
 
@@ -76,7 +72,9 @@ def create_refresh_token(
     )
 
     to_encode = {'exp': expire, 'sub': str(subject)}
-    return jwt.encode(to_encode, str(JWT_REFRESH_SECRET_KEY), str(JWT_ALGORITHM))
+    return jwt.encode(
+        to_encode, str(JWT_REFRESH_SECRET_KEY), str(JWT_ALGORITHM)
+    )
 
 
 def verify_refresh_token(token: str) -> str:

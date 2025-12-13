@@ -6,7 +6,7 @@ from tortoise import Tortoise
 from tortoise.exceptions import ConfigurationError, DBConnectionError
 
 # Assumindo que 'src.ultils.logs' contém o LOGGER configurado
-from src.utils.logs import LOGGER
+from src.global_utils.logs import LOGGER
 
 load_dotenv()
 

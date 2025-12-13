@@ -1,13 +1,13 @@
+import os
 from datetime import datetime
 from typing import Optional
 
-import os
-from jose import JWTError, jwt
-from fastapi import Depends, HTTPException, status
-from src.schemas.auth.schemas_auth import TokenPayload
 from dotenv import load_dotenv
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 
+from src.global_schemas.schemas_token import TokenPayload
 
 load_dotenv()
 

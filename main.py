@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from tortoise import Tortoise
 
-from confing import APP_NAME, UVICORN_WORKERS
+from config import APP_NAME, UVICORN_WORKERS
 from src.database.init_database import TORTOISE_ORM
 from src.included.included_routers import register_all_routes
 

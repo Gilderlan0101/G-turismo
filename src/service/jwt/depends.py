@@ -1,11 +1,9 @@
 from fastapi import Depends, HTTPException, status
 
-from confing import OAUTH2_SCHEME
+from config import OAUTH2_SCHEME
 from src.models.user import User
-from src.schemas.auth.schemas_auth import SystemUser
+from src.auth.schemas import SystemUser
 from src.service.jwt.jwt_decode_token import DecodeToken
-
-
 
 
 async def get_current_user(

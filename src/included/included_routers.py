@@ -1,7 +1,7 @@
 # included_routes.py
-from src.routes.auth.login import router as login
-from src.routes.auth.register import router as register
-
+from src.auth.route import router as auth_or_register
+from src.profile.user_profile import router as user_profile
+from src.services_g_turismo.published_services import router as publish_a_service
 
 def register_all_routes(app):
     """
@@ -9,8 +9,11 @@ def register_all_routes(app):
     """
 
     # AUTH
-    app.include_router(login, prefix='/auth')
-    app.include_router(register, prefix='/auth')
+    app.include_router(auth_or_register, prefix='/auth')
+    # PROFILE
+    app.include_router(user_profile, prefix='/profile')
+    # PUBLICATION OF SERVICES
+    app.include_router(publish_a_service, prefix='/service')
 
 
 __all__ = ['register_all_routes']

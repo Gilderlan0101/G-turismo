@@ -1,9 +1,8 @@
 import logging
 import os
 import sys
-from typing import (
-    Final,
-)  # Importar Final para tipagem mais clara de constantes
+from typing import \
+    Final  # Importar Final para tipagem mais clara de constantes
 
 # --- 1. Configuração de Variáveis Constantes ---
 

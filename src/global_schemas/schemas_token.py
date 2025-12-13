@@ -1,7 +1,5 @@
+from pydantic import BaseModel, EmailStr
 from typing import Optional
-
-from pydantic import BaseModel, EmailStr, ValidationError
-
 
 class SystemUser(BaseModel):
     id: int

@@ -6,6 +6,7 @@ from tortoise import fields, models
 
 class User(models.Model):
 
+    # Gerando IDs de forma segura
     id = fields.IntField(pk=True)
 
     username = fields.CharField(max_length=120, min_lenght=4)
